@@ -8,7 +8,6 @@ import (
 )
 
 func rootHandler(w http.ResponseWriter, r *http.Request) {
-	log.Println("Receiving info request")
 	w.Header().Set("Content-Type", "application/json")
 
 	w.Write([]byte(`{
@@ -22,13 +21,10 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func startHandler(w http.ResponseWriter, r *http.Request) {
-	log.Println("Receiving start request")
 	w.Header().Set("Content-Type", "application/json")
-	// TODO Start game
 }
 
 func moveHandler(w http.ResponseWriter, r *http.Request) {
-	log.Println("Receiving move request")
 	w.Header().Set("Content-Type", "application/json")
 
 	var p payload
@@ -38,7 +34,6 @@ func moveHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	d := ai(p)
-	log.Printf("Going %s\n", d)
 
 	fmt.Fprintf(
 		w,
@@ -51,9 +46,7 @@ func moveHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func endHandler(w http.ResponseWriter, r *http.Request) {
-	log.Println("Receiving end request")
 	w.Header().Set("Content-Type", "application/json")
-	// Remove game from store
 }
 
 func handleError(w http.ResponseWriter, err error) {
