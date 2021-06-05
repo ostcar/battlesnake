@@ -1,4 +1,4 @@
-package main
+package snake
 
 import (
 	"encoding/json"
@@ -22,6 +22,8 @@ type board struct {
 	Food    []point `json:"food"`
 	Hazards []point `json:"hazards"`
 	Snakes  []snake `json:"snakes"`
+
+	tempPoints []point
 }
 
 func (b board) free(p point) bool {
@@ -35,6 +37,12 @@ func (b board) free(p point) bool {
 			if p == p2 {
 				return false
 			}
+		}
+	}
+
+	for _, p2 := range b.tempPoints {
+		if p == p2 {
+			return false
 		}
 	}
 	return true
@@ -110,7 +118,7 @@ func (s snake) direction() direction {
 type direction int
 
 const (
-	dUp = iota
+	dUp direction = iota
 	dRight
 	dDown
 	dLeft
