@@ -5,89 +5,100 @@ import (
 	"testing"
 )
 
-func TestSaveMove(t *testing.T) {
+func TestBestMove(t *testing.T) {
 	for _, tt := range []struct {
 		name            string
-		board           board
-		point           point
+		board           payload
 		direction       direction
 		expectDirection direction
 	}{
 		{
 			"best suicide",
-			board{
-				Width:  11,
-				Height: 11,
-				Snakes: []snake{
-					{
-						Body: points(`
+			payload{
+				Board: board{
+					Width:  11,
+					Height: 11,
+					Snakes: []snake{
+						{
+							Body: points(`
 						xxxx.
 						x..x.
 						xvxx.
 						xx...
 						`),
+						},
 					},
 				},
+				You: snake{
+					Head: point{1, 1},
+				},
 			},
-			point{1, 1},
 			direction(dLeft),
 			dUp,
 		},
 
 		{
 			"go around",
-			board{
-				Width:  7,
-				Height: 7,
-				Snakes: []snake{
-					{
-						Body: points(`
-						...xx.x
-						xxxxxvx
-						x.....x
-						x.....x
-						x.....x
-						x.....x
-						xxxxxxx
-						`),
+			payload{
+				Board: board{
+					Width:  7,
+					Height: 7,
+					Snakes: []snake{
+						{
+							Body: points(`
+							...xx.x
+							xxxxxvx
+							x.....x
+							x.....x
+							x.....x
+							x.....x
+							xxxxxxx
+							`),
+						},
 					},
 				},
+				You: snake{
+					Head: point{5, 5},
+				},
 			},
-			point{5, 5},
 			direction(dUp),
 			dDown,
 		},
 
 		{
 			"long sackway",
-			board{
-				Width:  11,
-				Height: 11,
-				Snakes: []snake{
-					{
-						Body: points(`
-						.
-						xxx
-						x.x
-						x.x
-						x.x
-						x.x
-						x.x
-						x.x
-						x.x
-						x.v
-						xxxxxxx
-						`),
+			payload{
+				Board: board{
+					Width:  11,
+					Height: 11,
+					Snakes: []snake{
+						{
+							Body: points(`
+							.
+							xxx
+							x.x
+							x.x
+							x.x
+							x.x
+							x.x
+							x.x
+							x.x
+							x.v
+							xxxxxxx
+							`),
+						},
 					},
 				},
+				You: snake{
+					Head: point{2, 1},
+				},
 			},
-			point{2, 1},
 			direction(dLeft),
 			dRight,
 		},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
-			got := saveMove(tt.board, tt.point, tt.direction)
+			got := bestMove(tt.board, tt.direction)
 
 			if got != tt.expectDirection {
 				t.Errorf("saveMove() returned %s, expected %s", got, tt.expectDirection)

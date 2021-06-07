@@ -33,7 +33,8 @@ func (b board) free(p point) bool {
 	}
 
 	for _, snake := range b.Snakes {
-		for _, p2 := range snake.Body {
+		// The last field of the snake will be free on the next turn.
+		for _, p2 := range snake.Body[:len(snake.Body)-1] {
 			if p == p2 {
 				return false
 			}
@@ -51,6 +52,15 @@ func (b board) free(p point) bool {
 type point struct {
 	X int `json:"x"`
 	Y int `json:"y"`
+}
+
+func (p point) neighbors() []point {
+	return []point{
+		{p.X + 1, p.Y},
+		{p.X - 1, p.Y},
+		{p.X, p.Y + 1},
+		{p.X, p.Y - 1},
+	}
 }
 
 // next returns the point that is next to this point at the given direction.
@@ -113,6 +123,14 @@ func (s snake) direction() direction {
 	}
 
 	return s.Body[1].direction(s.Body[0])
+}
+
+func (s snake) possibleNext() []point {
+	var ps []point
+	for _, p := range s.Head.neighbors() {
+		ps = append(ps, p)
+	}
+	return ps
 }
 
 type direction int
