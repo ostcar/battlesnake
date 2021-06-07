@@ -2,14 +2,9 @@ package snake
 
 func ai(p payload) direction {
 	d := p.You.direction()
-	if len(p.Board.Food) > 0 && p.You.Health < 30 {
+	if len(p.Board.Food) > 0 { //} && p.You.Health < 30 {
 		food := p.Board.Food[nearestPoint(p.You.Head, p.Board.Food)]
-		next := p.You.Head.next(d)
-		if next.distance(food) >= p.You.Head.distance(food) || !p.Board.free(next) {
-			// Going in the same direction would not help comming closer. Or the
-			// next field is not free.
-			d = p.You.Head.direction(p.Board.Food[0])
-		}
+		d = p.You.Head.direction(food)
 	}
 
 	return bestMove(p, d)
@@ -77,9 +72,10 @@ func isSave(b board, p point, deep int) (bool, int) {
 
 func nearestPoint(p point, others []point) int {
 	n := 0
-	d := 10000.0
+	d := 10000
 	for i, o := range others {
-		if p.distance(o) < d {
+		if newd := p.distance(o); newd < d {
+			d = newd
 			n = i
 		}
 	}

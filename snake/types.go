@@ -2,7 +2,6 @@ package snake
 
 import (
 	"encoding/json"
-	"math"
 )
 
 type payload struct {
@@ -99,10 +98,17 @@ func (p point) direction(other point) direction {
 	return dUp
 }
 
-func (p point) distance(other point) float64 {
-	a := p.X - other.X
-	b := p.Y - other.Y
-	return math.Sqrt(float64(a*a + b*b))
+func (p point) distance(other point) int {
+	a := abs(p.X - other.X)
+	b := abs(p.Y - other.Y)
+	return a + b
+}
+
+func abs(i int) int {
+	if i < 0 {
+		return -1 * i
+	}
+	return i
 }
 
 type snake struct {

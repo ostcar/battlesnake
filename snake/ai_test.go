@@ -165,6 +165,33 @@ func TestIsSave(t *testing.T) {
 	}
 }
 
+func TestNearestPoint(t *testing.T) {
+	for _, tt := range []struct {
+		name     string
+		point    point
+		others   []point
+		expected int
+	}{
+		{
+			"two points",
+			point{1, 1},
+			[]point{
+				{2, 0},
+				{5, 5},
+			},
+			0,
+		},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			got := nearestPoint(tt.point, tt.others)
+
+			if got != tt.expected {
+				t.Errorf("nearestPoint() returned %d, expected %d", got, tt.expected)
+			}
+		})
+	}
+}
+
 func points(s string) []point {
 	lines := strings.Split(s, "\n")
 	revert(lines)
