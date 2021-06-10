@@ -10,9 +10,19 @@ type payload struct {
 		Ruleset json.RawMessage `json:"ruleset"`
 		Timeout int             `json:"timeout"`
 	} `json:"game"`
-	Turn  int   `json:"turn"`
-	Board board `json:"board"`
-	You   snake `json:"you"`
+	Turn  int    `json:"turn"`
+	Board board  `json:"board"`
+	You   *snake `json:"you"`
+}
+
+func (p *payload) linkYou() {
+	for i := range p.Board.Snakes {
+		if p.You.ID == p.Board.Snakes[i].ID {
+			p.You = &p.Board.Snakes[i]
+			return
+		}
+	}
+	panic("you are not on the board")
 }
 
 type board struct {

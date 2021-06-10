@@ -29,7 +29,7 @@ func TestBestMove(t *testing.T) {
 						},
 					},
 				},
-				You: snake{
+				You: &snake{
 					Head: point{1, 1},
 				},
 			},
@@ -57,7 +57,7 @@ func TestBestMove(t *testing.T) {
 						},
 					},
 				},
-				You: snake{
+				You: &snake{
 					Head: point{5, 5},
 				},
 			},
@@ -89,15 +89,71 @@ func TestBestMove(t *testing.T) {
 						},
 					},
 				},
-				You: snake{
+				You: &snake{
 					Head: point{2, 1},
 				},
 			},
 			direction(dLeft),
 			dRight,
 		},
+
+		{
+			"shorter snake",
+			payload{
+				Board: board{
+					Width:  11,
+					Height: 11,
+					Snakes: []snake{
+						{
+							Body: points(`
+							..xxxxxxxx.
+							..x......x.
+							..x......xx
+							vxx.......x
+							..........x
+							..........x
+							..........x
+							..........x
+							..........x
+							..........x
+							..........x
+							`),
+							Health: 15,
+							Head:   point{0, 7},
+							ID:     "other",
+						},
+						{
+							Body: points(`
+							...........
+							...........
+							...x.......
+							...x.......
+							.vxx.......
+							..xx.......
+							...........
+							...........
+							...........
+							...........
+							...........
+							`),
+							Health: 7,
+							Head:   point{1, 6},
+							ID:     "me",
+						},
+					},
+				},
+				You: &snake{
+					ID: "me",
+				},
+			},
+			direction(dLeft),
+			dDown,
+		},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
+			if tt.board.You.ID != "" {
+				tt.board.linkYou()
+			}
 			got := bestMove(tt.board, tt.direction)
 
 			if got != tt.expectDirection {

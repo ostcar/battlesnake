@@ -1,13 +1,27 @@
 package snake
 
+import (
+	"fmt"
+	"math/rand"
+)
+
 func ai(p payload) direction {
-	d := p.You.direction()
-	if len(p.Board.Food) > 0 { //} && p.You.Health < 30 {
+	if len(p.You.Body) < 2 || p.You.Body[0] == p.You.Body[1] {
+		// First move.
+		return dUp
+	}
+
+	d := direction(rand.Int() % 4)
+	if len(p.Board.Food) > 0 && p.You.Health < 30 {
 		food := p.Board.Food[nearestPoint(p.You.Head, p.Board.Food)]
 		d = p.You.Head.direction(food)
 	}
 
-	return bestMove(p, d)
+	d = bestMove(p, d)
+	if p.Turn == 0 {
+		fmt.Println(p.You.Body, p.You.Length)
+	}
+	return d
 }
 
 // bestMove calculates a value for each direction and returns the direction with
@@ -26,7 +40,11 @@ func bestMove(p payload, d direction) direction {
 			neighbors := snake.Head.neighbors()
 			for _, neighbor := range neighbors {
 				if newPoint == neighbor {
-					movesToDie -= len(neighbors)
+					if p.You.Length <= snake.Length {
+						movesToDie = len(neighbors) - 1
+						continue
+					}
+					movesToDie += 5
 				}
 			}
 		}
