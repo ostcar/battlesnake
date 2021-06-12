@@ -8,6 +8,7 @@ import (
 
 // Run starts the webserver.
 func Run(addr string) error {
+	log.Default()
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", rootHandler)
 	mux.HandleFunc("/start", startHandler)

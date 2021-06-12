@@ -2,6 +2,9 @@ package snake
 
 import (
 	"encoding/json"
+	"fmt"
+
+	"github.com/BattlesnakeOfficial/rules"
 )
 
 type payload struct {
@@ -35,33 +38,7 @@ type board struct {
 	tempPoints []point
 }
 
-func (b board) free(p point) bool {
-	if p.X >= b.Height || p.Y >= b.Width || p.X < 0 || p.Y < 0 {
-		// Out of the board
-		return false
-	}
-
-	for _, snake := range b.Snakes {
-		// The last field of the snake will be free on the next turn.
-		for _, p2 := range snake.Body[:len(snake.Body)-1] {
-			if p == p2 {
-				return false
-			}
-		}
-	}
-
-	for _, p2 := range b.tempPoints {
-		if p == p2 {
-			return false
-		}
-	}
-	return true
-}
-
-type point struct {
-	X int `json:"x"`
-	Y int `json:"y"`
-}
+type point rules.Point
 
 func (p point) neighbors() []point {
 	return []point{
@@ -108,13 +85,13 @@ func (p point) direction(other point) direction {
 	return dUp
 }
 
-func (p point) distance(other point) int {
+func (p point) distance(other point) int32 {
 	a := abs(p.X - other.X)
 	b := abs(p.Y - other.Y)
 	return a + b
 }
 
-func abs(i int) int {
+func abs(i int32) int32 {
 	if i < 0 {
 		return -1 * i
 	}
@@ -122,15 +99,15 @@ func abs(i int) int {
 }
 
 type snake struct {
-	ID      string  `json:"id"`
-	Name    string  `json:"name"`
-	Health  int     `json:"health"`
-	Body    []point `json:"body"`
-	Latency string  `json:"latency"`
-	Head    point   `json:"head"`
-	Length  int     `json:"length"`
-	Shout   string  `json:"shout"`
-	Squad   string  `json:"squad"`
+	ID     string  `json:"id"`
+	Name   string  `json:"name"`
+	Health int     `json:"health"`
+	Body   []point `json:"body"`
+	//Latency string  `json:"latency"`
+	Head   point  `json:"head"`
+	Length int    `json:"length"`
+	Shout  string `json:"shout"`
+	Squad  string `json:"squad"`
 }
 
 func (s snake) direction() direction {
@@ -158,6 +135,20 @@ const (
 	dLeft
 )
 
+func toDirection(in string) direction {
+	switch in {
+	case "up":
+		return dUp
+	case "right":
+		return dRight
+	case "down":
+		return dDown
+	case "left":
+		return dLeft
+	}
+	panic(fmt.Sprintf("invalid direction %s", in))
+}
+
 func (d direction) String() string {
 	switch d % 4 {
 	case 0:
@@ -171,4 +162,16 @@ func (d direction) String() string {
 	default:
 		panic("Invalid direction")
 	}
+}
+
+func nearestPoint(p point, others []rules.Point) int {
+	n := 0
+	d := int32(10000)
+	for i, o := range others {
+		if newd := p.distance(point(o)); newd < d {
+			d = newd
+			n = i
+		}
+	}
+	return n
 }

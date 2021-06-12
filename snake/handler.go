@@ -3,6 +3,7 @@ package snake
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 )
@@ -21,20 +22,25 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func startHandler(w http.ResponseWriter, r *http.Request) {
-	log.Println("Start game")
+	log.Printf("Start game")
 	w.Header().Set("Content-Type", "application/json")
 }
 
 func moveHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
+	buf, err := io.ReadAll(r.Body)
+	if err != nil {
+		handleError(w, fmt.Errorf("reading request body: %w", err))
+	}
+
 	var p payload
-	if err := json.NewDecoder(r.Body).Decode(&p); err != nil {
-		handleError(w, err)
+	if err := json.Unmarshal(buf, &p); err != nil {
+		handleError(w, fmt.Errorf("decoding request body\nBody: %s\nError: %w", buf, err))
 		return
 	}
 
-	d := ai(p)
+	d := ai(stateFromPayload(p))
 
 	fmt.Fprintf(
 		w,

@@ -8,6 +8,7 @@ import (
 )
 
 func main() {
+	// TODO: Use flags, also for debug and lookahead
 	addr := ":8080"
 	if len(os.Args) >= 2 {
 		addr = os.Args[1]

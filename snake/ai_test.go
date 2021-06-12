@@ -3,269 +3,118 @@ package snake
 import (
 	"strings"
 	"testing"
+
+	"github.com/BattlesnakeOfficial/rules"
 )
 
-func TestBestMove(t *testing.T) {
+func TestBeatenSnakesPoints(t *testing.T) {
 	for _, tt := range []struct {
-		name            string
-		board           payload
-		direction       direction
-		expectDirection direction
+		startalive     int
+		alive          int
+		expectedPoints int
 	}{
 		{
-			"best suicide",
-			payload{
-				Board: board{
-					Width:  11,
-					Height: 11,
-					Snakes: []snake{
-						{
-							Body: points(`
-						xxxx.
-						x..x.
-						xvxx.
-						xx...
-						`),
-						},
-					},
-				},
-				You: &snake{
-					Head: point{1, 1},
-				},
-			},
-			direction(dLeft),
-			dUp,
+			3,
+			3,
+			0,
 		},
-
 		{
-			"go around",
-			payload{
-				Board: board{
-					Width:  7,
-					Height: 7,
-					Snakes: []snake{
-						{
-							Body: points(`
-							...xx.x
-							xxxxxvx
-							x.....x
-							x.....x
-							x.....x
-							x.....x
-							xxxxxxx
-							`),
-						},
-					},
-				},
-				You: &snake{
-					Head: point{5, 5},
-				},
-			},
-			direction(dUp),
-			dDown,
+			3,
+			2,
+			100,
 		},
-
 		{
-			"long sackway",
-			payload{
-				Board: board{
-					Width:  11,
-					Height: 11,
-					Snakes: []snake{
-						{
-							Body: points(`
-							.
-							xxx
-							x.x
-							x.x
-							x.x
-							x.x
-							x.x
-							x.x
-							x.x
-							x.v
-							xxxxxxx
-							`),
-						},
-					},
-				},
-				You: &snake{
-					Head: point{2, 1},
-				},
-			},
-			direction(dLeft),
-			dRight,
+			4,
+			2,
+			100,
 		},
-
 		{
-			"shorter snake",
-			payload{
-				Board: board{
-					Width:  11,
-					Height: 11,
-					Snakes: []snake{
-						{
-							Body: points(`
-							..xxxxxxxx.
-							..x......x.
-							..x......xx
-							vxx.......x
-							..........x
-							..........x
-							..........x
-							..........x
-							..........x
-							..........x
-							..........x
-							`),
-							Health: 15,
-							Head:   point{0, 7},
-							ID:     "other",
-						},
-						{
-							Body: points(`
-							...........
-							...........
-							...x.......
-							...x.......
-							.vxx.......
-							..xx.......
-							...........
-							...........
-							...........
-							...........
-							...........
-							`),
-							Health: 7,
-							Head:   point{1, 6},
-							ID:     "me",
-						},
-					},
-				},
-				You: &snake{
-					ID: "me",
-				},
-			},
-			direction(dLeft),
-			dDown,
+			4,
+			3,
+			50,
 		},
 	} {
-		t.Run(tt.name, func(t *testing.T) {
-			if tt.board.You.ID != "" {
-				tt.board.linkYou()
-			}
-			got := bestMove(tt.board, tt.direction)
+		got := beatenSnakesPoints(tt.startalive, tt.alive)
 
-			if got != tt.expectDirection {
-				t.Errorf("saveMove() returned %s, expected %s", got, tt.expectDirection)
-			}
-		})
+		if got != tt.expectedPoints {
+			t.Errorf("beatenSnakesPoints(%d, %d) == %d, expected %d", tt.startalive, tt.alive, got, tt.expectedPoints)
+		}
 	}
 }
 
-func TestIsSave(t *testing.T) {
+func TestPossibleMoves(t *testing.T) {
 	for _, tt := range []struct {
 		name        string
-		board       board
+		board       rules.BoardState
 		point       point
 		deep        int
-		expectSave  bool
 		expectMoves int
 	}{
 		{
 			"test on point",
-			board{
+			rules.BoardState{
 				Width:  11,
 				Height: 11,
-				Snakes: []snake{
+				Snakes: []rules.Snake{
 					{
 						Body: points(`
-						........
-						....vxx.
+						....xxx.
+						....xvx.
 						`),
 					},
 				},
 			},
 			point{5, 0},
 			2,
-			false,
 			0,
 		},
 
 		{
 			"test in dead end",
-			board{
+			rules.BoardState{
 				Width:  11,
 				Height: 11,
-				Snakes: []snake{
+				Snakes: []rules.Snake{
 					{
 						Body: points(`
-						....xxx.
-						....v.x.
+						....xxxx
+						....xv.x
 						`),
 					},
 				},
 			},
 			point{5, 0},
 			2,
-			false,
 			1,
 		},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
-			save, moves := isSave(tt.board, tt.point, tt.deep)
-			if save != tt.expectSave || moves != tt.expectMoves {
-				t.Errorf("isSave() returned (%t, %d), expected (%t, %d)", save, moves, tt.expectSave, tt.expectMoves)
+			_, moves := possibleMoves(&tt.board, tt.point, []point{}, tt.deep)
+			if moves != tt.expectMoves {
+				t.Errorf("possibleMoves() returned %d, expected %d", moves, tt.expectMoves)
 			}
 		})
 	}
 }
 
-func TestNearestPoint(t *testing.T) {
-	for _, tt := range []struct {
-		name     string
-		point    point
-		others   []point
-		expected int
-	}{
-		{
-			"two points",
-			point{1, 1},
-			[]point{
-				{2, 0},
-				{5, 5},
-			},
-			0,
-		},
-	} {
-		t.Run(tt.name, func(t *testing.T) {
-			got := nearestPoint(tt.point, tt.others)
-
-			if got != tt.expected {
-				t.Errorf("nearestPoint() returned %d, expected %d", got, tt.expected)
-			}
-		})
-	}
-}
-
-func points(s string) []point {
+func points(s string) []rules.Point {
 	lines := strings.Split(s, "\n")
 	revert(lines)
-	var ps []point
-	y := -1
+	var ps []rules.Point
+	y := int32(-1)
 	for _, line := range lines {
 		line = strings.TrimSpace(line)
 		if len(line) == 0 {
 			continue
 		}
 		y++
-		x := -1
+		x := int32(-1)
 		for _, c := range line {
 			x++
 			if c == '.' {
 				continue
 			}
-			ps = append(ps, point{x, y})
+			ps = append(ps, rules.Point{X: x, Y: y})
 		}
 	}
 	return ps
